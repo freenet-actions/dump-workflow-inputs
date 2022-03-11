@@ -5,7 +5,7 @@ This action dumps the branch/tag, commit hash and workflow inputs to the log.
 # Usage
 
 ```yaml
-- uses: md-actions/dump-workflow-inputs@HEAD
+- uses: freenet-actions/dump-workflow-inputs@HEAD
   with:
     inputs: ${{ toJSON(github.event.inputs) }}
 ```
