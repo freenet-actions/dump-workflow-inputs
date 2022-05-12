@@ -1,0 +1,25 @@
+name: Dump some inputs
+on:
+  workflow_dispatch:
+    inputs:
+      string-value:
+        description: A string value.
+        required: false
+        default: 'Hello World'
+      boolean-value:
+        description: A boolean value.
+        required: false
+        type: boolean
+        default: true
+      choice-value:
+        description: A choice value.
+        required: false
+        type: choice
+        options: [value1, value2, value3]
+        default: value2
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump inputs
+        uses: freenet-actions/dump-workflow-inputs@write-job-summary
