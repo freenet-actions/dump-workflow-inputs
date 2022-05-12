@@ -23,3 +23,6 @@ jobs:
     steps:
       - name: Dump inputs
         uses: freenet-actions/dump-workflow-inputs@write-job-summary
+        with:
+          inputs: ${{ toJSON(github.event.inputs) }}
+          write-summary: true
