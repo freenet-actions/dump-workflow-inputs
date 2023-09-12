@@ -1,0 +1,63 @@
+name: Dependabot auto-merge
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    concurrency: dependabot-automerge
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout
+        id: checkout
+        if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: setup node
+        id: node-setup
+        if: steps.checkout.conclusion == 'success'
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+
+      - name: Update dependencies
+        id: update
+        if: steps.node-setup.conclusion == 'success'
+        run: |
+          set -euo pipefail
+          
+          git config user.email "Sebastian.Goral@freenet.ag"
+          git config user.name "Automatic dependency updates"
+          
+          npm ci --omit=dev
+          
+          git add node_modules
+          git commit --amend --no-edit
+          git push --force
+
+      - name: Wait for pull request to update
+        id: wait
+        if: steps.update.conclusion == 'success'
+        run: sleep 5
+
+      - name: Merge
+        id: merge
+        if: steps.wait.conclusion == 'success'
+        run: gh pr merge '${{ github.event.pull_request.number }}' --squash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
